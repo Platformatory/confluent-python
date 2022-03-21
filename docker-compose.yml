@@ -19,7 +19,7 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
-      - "9101:9101"
+      - "1234:1234"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
@@ -39,6 +39,9 @@ services:
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1234:/usr/share/jmx-exporter/kafka_broker.yml
+    volumes:
+      - ./jmx-exporter/:/usr/share/jmx-exporter
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.0.1
@@ -186,7 +189,8 @@ services:
     container_name: grafana
     depends_on:
      - prometheus
-
+    volumes:
+      - ./grafana:/etc/grafana/provisioning
   prometheus:
     image: "prom/prometheus"
     ports:
@@ -195,7 +199,6 @@ services:
      - ./etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     command: "--config.file=/etc/prometheus/prometheus.yml"     
     container_name: prometheus
-
 
   producer:
     build:
